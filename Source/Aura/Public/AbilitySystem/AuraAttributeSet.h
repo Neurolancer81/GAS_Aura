@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "AttributeSet.h"
-#include "MyAttributeSet.generated.h"
+#include "AuraAttributeSet.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class AURA_API UMyAttributeSet : public UAttributeSet
+class AURA_API UAuraAttributeSet : public UAttributeSet
 {
 	GENERATED_BODY()
 	
