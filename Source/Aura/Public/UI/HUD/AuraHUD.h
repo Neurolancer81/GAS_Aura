@@ -25,7 +25,6 @@ public:
 
 	void InitOverlay(const FWidgetControllerParams& WidgetControllerParams);
 
-
 private:
 	
 	UPROPERTY(EditAnywhere)

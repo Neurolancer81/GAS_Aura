@@ -26,7 +26,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// Health
-	UPROPERTY(ReplicatedUsing=OnRep_Health, BlueprintReadOnly, Category="Attributes | Vital")
+	UPROPERTY(ReplicatedUsing=OnRep_Health, BlueprintReadOnly, Category="VitalAttributes")
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Health);
 
@@ -34,7 +34,7 @@ public:
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
 
 	// Mana
-	UPROPERTY(ReplicatedUsing=OnRep_Mana, BlueprintReadOnly, Category="Attributes | Magic")
+	UPROPERTY(ReplicatedUsing=OnRep_Mana, BlueprintReadOnly, Category="VitalAttributes")
 	FGameplayAttributeData Mana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, Mana);
 
@@ -42,7 +42,7 @@ public:
 	void OnRep_Mana(const FGameplayAttributeData& OldMana) const;
 
 	// MaxHealth
-	UPROPERTY(ReplicatedUsing=OnRep_MaxHealth, BlueprintReadOnly, Category="Attributes | Vital")
+	UPROPERTY(ReplicatedUsing=OnRep_MaxHealth, BlueprintReadOnly, Category="VitalAttributes")
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxHealth);
 
@@ -50,7 +50,7 @@ public:
 	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const;
 
 	// MaxMana
-	UPROPERTY(ReplicatedUsing=OnRep_MaxMana, BlueprintReadOnly, Category="Attributes | Magic")
+	UPROPERTY(ReplicatedUsing=OnRep_MaxMana, BlueprintReadOnly, Category="VitalAttributes")
 	FGameplayAttributeData MaxMana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxMana);
 
