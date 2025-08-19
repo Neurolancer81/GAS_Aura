@@ -32,7 +32,9 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 
 	// Init ability actor for the server
 	InitAbilityActorInfo();
-	
+
+	// Add any starting abilities
+	AddCharacterAbilities();	
 }
 
 void AAuraCharacter::OnRep_PlayerState()
