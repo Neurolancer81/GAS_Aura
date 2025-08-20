@@ -8,6 +8,7 @@
 #include "AuraProjectileSpell.generated.h"
 
 class AAuraProjectile;
+class UAnimMontage;
 /**
  * 
  */
@@ -21,7 +22,13 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Projectile")
+	void SpawnProjectile();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProjectileProperties")
 	TSubclassOf<AAuraProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProjectileProperties")
+	TObjectPtr<UAnimMontage> Montage;
 	
 };
