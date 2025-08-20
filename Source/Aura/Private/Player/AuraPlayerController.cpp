@@ -6,6 +6,8 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AuraGameplayTags.h"
 #include "EnhancedInputSubsystems.h"
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
@@ -14,9 +16,7 @@
 AAuraPlayerController::AAuraPlayerController()
 {
 	bReplicates = true;
-
-	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
-	
+	Spline = CreateDefaultSubobject<USplineComponent>("Spline");	
 }
 
 void AAuraPlayerController::PlayerTick(float DeltaTime)
@@ -25,7 +25,31 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 
 	// Get the hit result for mouse hovering on an enemy 
 	CursorTrace();
+
+	// Adding Auto run behaviour
+	if (bAutoRunning) AutoRun();
 	
+}
+
+void AAuraPlayerController::AutoRun()
+{
+	if (APawn* ControlledPawn = GetPawn(); IsValid(ControlledPawn))
+	{
+		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(
+			ControlledPawn->GetActorLocation(), ESplineCoordinateSpace::World);
+
+		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(
+		ControlledPawn->GetActorLocation(), ESplineCoordinateSpace::World);
+
+		ControlledPawn->AddMovementInput(Direction.GetSafeNormal());
+
+		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
+
+		if (DistanceToDestination <= AutoRunAcceptanceRadius)
+		{
+			bAutoRunning = false;
+		}
+	}
 }
 
 void AAuraPlayerController::BeginPlay()
@@ -100,9 +124,50 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	// GEngine->AddOnScreenDebugMessage(2, 3.0f, FColor::Blue, *InputTag.ToString());
-	if (!GetAuraAbilitySystemComponent()) return;
-	GetAuraAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
+	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))
+	{
+		if (GetAuraAbilitySystemComponent())
+		{
+			GetAuraAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
+		}
+		return;
+	}
+
+	if (bTargeting)
+	{
+		if (GetAuraAbilitySystemComponent())
+		{
+			GetAuraAbilitySystemComponent()->AbilityInputTagHeld(InputTag);
+		}
+	}
+	else
+	{
+		if (const APawn* ControlledPawn = GetPawn<APawn>(); FollowTime <= ShortPressThreshold && ControlledPawn)
+		{
+			UNavigationPath* NavigationPath = UNavigationSystemV1::FindPathToLocationSynchronously(
+				this,
+				ControlledPawn->GetActorLocation(),
+				CachedDestination);
+			if (NavigationPath)
+			{
+				Spline->ClearSplinePoints();
+				for (const FVector& PathPoint: NavigationPath->PathPoints)
+				{
+					Spline->AddSplinePoint(PathPoint, ESplineCoordinateSpace::World);
+					DrawDebugSphere(GetWorld(), PathPoint, 5.0f, 12, FColor::Green, false, 5.f);					
+				}
+				if (NavigationPath->PathPoints.Num() > 0)
+				{
+					CachedDestination = NavigationPath->PathPoints[NavigationPath->PathPoints.Num() - 1];
+					bAutoRunning = true;
+				}
+				
+			}			
+		}
+		
+		bTargeting = false;
+		FollowTime = 0.0f;
+	}	
 }
 
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
@@ -129,10 +194,10 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	{
 		FollowTime += GetWorld()->GetDeltaSeconds();
 
-		FHitResult HitResult;
-		if (GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
+		
+		if (CursorHit.bBlockingHit)
 		{
-			CachedDestination = HitResult.ImpactPoint;
+			CachedDestination = CursorHit.ImpactPoint;
 		}
 
 		if (APawn* ControlledPawn = GetPawn<APawn>())
@@ -140,61 +205,24 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
 			ControlledPawn->AddMovementInput(WorldDirection);
 		}
-	}
-
-	
-
-	
+	}	
 }
 
 void AAuraPlayerController::CursorTrace()
 {
-	FHitResult CursorHit;
+	
 	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
 	if (!CursorHit.bBlockingHit) return;
 
 	LastActor = ThisActor;
 	ThisActor = CursorHit.GetActor();
 
-	/**
-	 * Line trace from cursor to screen. There are several scenarios
-	 * */
-
-	// Option 1: LastActor and ThisActor are Null
-	// - Do Nothing
-	// Option 2: LastActor == null and ThisActor is Null
-	//	- Highlight ThisActor
-	// Option 3: LastActor != null and ThisActor == null
-	// - Unhighlight LastActor
-	// Both actors are not null but the two actors are the same
-	// - Do nothing
-	// Both actors are not null and they are not the same
-	// - Unhighlight LastActor and Highlight ThisActor.
-
-	if (LastActor == nullptr)
+	if (LastActor != ThisActor)
 	{
-		if (ThisActor != nullptr)
-		{
-			// Option 2
-			ThisActor->HighlightActor();
-		}
-	}
-	else
-	{
-		if (ThisActor == nullptr)
-		{
-			// Option 3
-			LastActor->UnHighlightActor();
-		}
-		else
-		{
-			if (LastActor != ThisActor)
-			{
-				// Option 4
-				ThisActor->HighlightActor();
-				LastActor->UnHighlightActor();
-			}
-		}
+		if (LastActor) LastActor->UnHighlightActor();
+		if (ThisActor) ThisActor->HighlightActor();
 	}
 	
 }
+
+
