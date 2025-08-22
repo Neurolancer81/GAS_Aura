@@ -5,6 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameplayEffectExtension.h"
+#include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
@@ -87,7 +88,7 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 	{
 		EffectProperties.TargetProperties->AvatarActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
 		EffectProperties.TargetProperties->Controller = Data.Target.AbilityActorInfo->PlayerController.Get();
-		EffectProperties.TargetProperties->Character = Data.Target.AbilityActorInfo->PlayerController->GetCharacter();
+		EffectProperties.TargetProperties->Character = Cast<ACharacter>(Data.Target.AbilityActorInfo->AvatarActor.Get());
 		EffectProperties.TargetProperties->AbilitySystemComponent =
 			UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(EffectProperties.TargetProperties->AvatarActor);
 	}
@@ -100,6 +101,16 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 
 	FEffectProperties EffectProperties;
 	SetEffectProperties(Data, EffectProperties);
+
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	{
+		SetHealth(FMath::Clamp(GetHealth(), 0.f, GetMaxHealth()));
+		UE_LOG(LogTemp, Warning, TEXT("Changed Health on %s, New Health: %f"), *EffectProperties.TargetProperties->AvatarActor->GetName(), GetHealth());
+	}
+	if (Data.EvaluatedData.Attribute == GetManaAttribute())
+	{
+		SetMana(FMath::Clamp(GetMana(), 0.f, GetMaxMana()));
+	}
 
 }
 

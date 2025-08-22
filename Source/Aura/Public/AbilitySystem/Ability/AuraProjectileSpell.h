@@ -23,12 +23,12 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Projectile")
-	void SpawnProjectile();
+	void SpawnProjectile(const FVector& ProjectileTargetLocation);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProjectileProperties")
 	TSubclassOf<AAuraProjectile> ProjectileClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ProjectileProperties")
-	TObjectPtr<UAnimMontage> Montage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ProjectileProperties")
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
 	
 };

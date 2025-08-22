@@ -6,12 +6,16 @@ public class Aura : ModuleRules
 {
 	public Aura(ReadOnlyTargetRules target) : base(target)
 	{
+		PrivateDependencyModuleNames.AddRange(new string[] { "MotionWarping" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange([
-			"Core", "CoreUObject", "Engine", 
-			"InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTags", "GameplayTasks", "UMG" , "NavigationSystem"
-		]);
+		PublicDependencyModuleNames.AddRange(new string[]
+			{
+				"Core", "CoreUObject", "Engine",
+				"InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTags", "GameplayTasks", "UMG",
+				"NavigationSystem", "Niagara"
+			}
+		);
 
 		PrivateDependencyModuleNames.AddRange([]);
 

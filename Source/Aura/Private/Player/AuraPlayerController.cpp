@@ -81,6 +81,8 @@ void AAuraPlayerController::SetupInputComponent()
 
 	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent);
 	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
+	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Started, this, &ThisClass::ShiftPressed);
+	AuraInputComponent->BindAction(ShiftAction, ETriggerEvent::Completed, this, &ThisClass::ShiftReleased);
 	AuraInputComponent->BindAbilityActions(InputConfig, this,
 		&ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 	
@@ -132,15 +134,10 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		}
 		return;
 	}
-
-	if (bTargeting)
-	{
-		if (GetAuraAbilitySystemComponent())
-		{
-			GetAuraAbilitySystemComponent()->AbilityInputTagHeld(InputTag);
-		}
-	}
-	else
+	// Tell the ASC that the key has been released
+	if (GetAuraAbilitySystemComponent()) GetAuraAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
+	
+	if (!bTargeting && !bShiftDown)
 	{
 		if (const APawn* ControlledPawn = GetPawn<APawn>(); FollowTime <= ShortPressThreshold && ControlledPawn)
 		{
@@ -154,7 +151,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 				for (const FVector& PathPoint: NavigationPath->PathPoints)
 				{
 					Spline->AddSplinePoint(PathPoint, ESplineCoordinateSpace::World);
-					DrawDebugSphere(GetWorld(), PathPoint, 5.0f, 12, FColor::Green, false, 5.f);					
+					// DrawDebugSphere(GetWorld(), PathPoint, 5.0f, 12, FColor::Green, false, 5.f);					
 				}
 				if (NavigationPath->PathPoints.Num() > 0)
 				{
@@ -167,7 +164,8 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		
 		bTargeting = false;
 		FollowTime = 0.0f;
-	}	
+	}
+		
 }
 
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
@@ -182,7 +180,7 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 		return;
 	}
 	
-	if (bTargeting)
+	if (bTargeting || bShiftDown)
 	{
 		if (GetAuraAbilitySystemComponent())
 		{

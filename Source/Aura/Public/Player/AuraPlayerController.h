@@ -39,6 +39,9 @@ private:
 	UPROPERTY(EditAnywhere, Category="Input")
 	TObjectPtr<UInputAction> MoveAction;
 
+	UPROPERTY(EditAnywhere, Category="Input")
+	TObjectPtr<UInputAction> ShiftAction;
+
 	UPROPERTY(EditDefaultsOnly, Category="Input")
 	TObjectPtr<UAuraInputConfig> InputConfig;
 
@@ -48,6 +51,9 @@ private:
 	UAuraAbilitySystemComponent* GetAuraAbilitySystemComponent();
 	
 	void Move(const FInputActionValue& ActionValue);
+	void ShiftPressed() {bShiftDown = true;}
+	void ShiftReleased() {bShiftDown = false;}
+	bool bShiftDown = false;
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);
 	void AbilityInputTagReleased(FGameplayTag InputTag);
