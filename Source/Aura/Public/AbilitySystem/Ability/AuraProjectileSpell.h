@@ -13,7 +13,7 @@ class UAnimMontage;
  * 
  */
 UCLASS()
-class AURA_API UAuraProjectileSpell : public UAuraGameplayAbility, public ICombatInterface
+class AURA_API UAuraProjectileSpell : public UAuraGameplayAbility
 {
 	GENERATED_BODY()
 

@@ -107,6 +107,7 @@ public:
 	/*
 	 * Secondary Attributes
 	 */
+	
 	// Armor
 	UPROPERTY(ReplicatedUsing=OnRep_Armor, BlueprintReadOnly, Category="Attributes | Vital")
 	FGameplayAttributeData Armor;
@@ -156,6 +157,14 @@ public:
 	UPROPERTY(ReplicatedUsing=OnRep_MaxMana, BlueprintReadOnly, Category="Attributes | Vital")
 	FGameplayAttributeData MaxMana;
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, MaxMana);
+
+	/*
+	 * Meta Attributes
+	 */
+
+	UPROPERTY(BlueprintReadOnly, Category="Attributes | Meta")
+	FGameplayAttributeData IncomingDamage;
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet, IncomingDamage);
 
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
