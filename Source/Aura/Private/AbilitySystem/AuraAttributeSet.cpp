@@ -8,7 +8,9 @@
 #include "GameplayEffectExtension.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/AuraPlayerController.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -82,7 +84,8 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 		}
 		if (EffectProperties.SourceProperties->Controller)
 		{
-			EffectProperties.SourceProperties->Character = EffectProperties.SourceProperties->Controller->GetCharacter();
+			ACharacter* LocalCharacter = Cast<ACharacter>(EffectProperties.SourceProperties->Controller->GetPawn());
+			EffectProperties.SourceProperties->Character = LocalCharacter;
 		}
 	}
 
@@ -95,6 +98,18 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 			UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(EffectProperties.TargetProperties->AvatarActor);
 	}
 	
+}
+
+void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& EffectProperties, float Damage) const
+
+{
+	if (EffectProperties.SourceProperties->Character != EffectProperties.TargetProperties->Character)
+	{
+		if(AAuraPlayerController* PC = Cast<AAuraPlayerController>(UGameplayStatics::GetPlayerController(EffectProperties.SourceProperties->Character, false)))
+		{
+			PC->ShowDamageNumber(Damage, EffectProperties.TargetProperties->Character);
+		}
+	}
 }
 
 void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
@@ -139,6 +154,8 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
 				EffectProperties.TargetProperties->AbilitySystemComponent->TryActivateAbilitiesByTag(TagContainer);
 			}
+
+			ShowFloatingText(EffectProperties, LocalIncomingDamage);
 		}
 	}
 
