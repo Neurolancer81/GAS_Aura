@@ -13,7 +13,7 @@ public class Aura : ModuleRules
 			{
 				"Core", "CoreUObject", "Engine",
 				"InputCore", "EnhancedInput", "GameplayAbilities", "GameplayTags", "GameplayTasks", "UMG",
-				"NavigationSystem", "Niagara"
+				"NavigationSystem", "Niagara", "AIModule"
 			}
 		);
 
