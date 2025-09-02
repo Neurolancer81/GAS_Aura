@@ -17,6 +17,13 @@
 
 AAuraEnemy::AAuraEnemy()
 {
+
+	// Smoothing out character movement
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw   = false;
+	bUseControllerRotationRoll   = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+
 	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAuraAbilitySystemComponent>("AbilitySystemComponent");
@@ -39,7 +46,9 @@ void AAuraEnemy::PossessedBy(AController* NewController)
 	AuraAIController = Cast<AAuraAIController>(NewController);
 	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 	AuraAIController->RunBehaviorTree(BehaviorTree);
-	
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), false);
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("RangedAttacker"), CharacterClass != ECharacterClass::Warrior);
+
 }
 
 void AAuraEnemy::HighlightActor()
@@ -103,6 +112,7 @@ void AAuraEnemy::HitReactTagChanged(const FGameplayTag InTag, int32 TagCount)
 	bHitReacting = TagCount>0;
 
 	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"), bHitReacting);
 }
 
 void AAuraEnemy::InitHealthBar()
