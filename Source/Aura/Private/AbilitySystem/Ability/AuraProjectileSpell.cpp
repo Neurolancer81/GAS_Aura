@@ -28,6 +28,7 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	FTransform SpawnTransform;
 	SpawnTransform.SetLocation(SocketLocation);
 	FRotator SpawnRotator = (ProjectileTargetLocation - SocketLocation).Rotation();
+	SpawnRotator.Pitch = 0.0f;
 		
 	SpawnTransform.SetRotation(SpawnRotator.Quaternion());
 		
